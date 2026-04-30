@@ -18,6 +18,7 @@ The whole loop compresses what would normally be weeks of recruiting, scheduling
 ## Table of Contents
 
 - [Overview](#overview)
+- [Augmenting Real-World Research](#augmenting-real-world-research)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
 - [Repository Layout](#repository-layout)
@@ -43,9 +44,9 @@ PersonaForge is built for product, strategy, marketing, and research teams that 
 
 Typical use cases include:
 
+- **Research augmentation** — wrap synthetic interviews around any real qualitative or quantitative study to amplify its signal, fill gaps, and stress-test its conclusions. See [Augmenting Real-World Research](#augmenting-real-world-research) for the full pattern catalogue.
 - **Concept and proposition testing** — gauge how distinct customer segments react to a new product, message, pricing model, or feature before committing to live research.
 - **Decision simulation** — run "what would our customers say" panels against strategy briefs, policy changes, or roadmap trade-offs.
-- **Pre-research scoping** — sharpen real-world studies by identifying which questions, segments, and probes will yield the most signal.
 - **Document-grounded discovery** — upload a reference brief and let the platform interview synthetic customers about it, surfacing themes, objections, and gaps.
 - **Segmentation activation** — turn a static customer dataset into a panel of speaking, opinion-having personas you can interview repeatedly.
 
@@ -63,6 +64,25 @@ Two persona-creation paths feed the same simulation engine:
    The result: personas anchored in the real distributions of your real customers, not the modeller's intuition.
 
 Both paths converge on the same interview engine: each persona is questioned by a randomly-weighted respondent model from a pool of five frontier LLMs, with adaptive follow-up probes generated mid-conversation. The result is an interview corpus with structural diversity rather than the stylistic fingerprint of any single model.
+
+---
+
+## Augmenting Real-World Research
+
+PersonaForge is designed to **complement, not replace, real qualitative or quantitative research**. Wrapped around an existing study, synthetic interviews act as a research multiplier — directional signal at LLM cost, used to scaffold or validate the more expensive ground-truth research before, during, or after fieldwork.
+
+Common augmentation patterns:
+
+- **Pre-fielding pilot** — run your questionnaire against a synthetic panel before paying to deploy it to real respondents. Catch ambiguous wording, dead-end branches, missing probes, and segment-level interpretation differences early, when fixing them is cheap.
+- **Hard-to-reach segments** — when a real-world segment is expensive, sparse, or operationally impossible to recruit (rare medical conditions, C-suite buyers, sensitive contexts, niche professions), use a data-grounded ML persona panel to triangulate where field recruitment can't.
+- **Hypothesis generation** — run a fast, low-cost synthetic study upfront to surface candidate themes, objections, and questions, then take only the sharpest of those into expensive real-world fieldwork.
+- **Sample augmentation** — pair a small real qualitative study (e.g., n=10 in-depth interviews) with a larger synthetic panel (n=100+) to surface edge cases and stress-test the stability of patterns you observed in the real sample.
+- **Stress-testing findings** — once a real study is complete, re-run the same questionnaire against the synthetic panel to separate findings that are robust from those that may be artifacts of the specific real-world sample.
+- **Survey instrument validation** — test for question-order effects, leading wording, and segment-level interpretation differences without burning real respondents.
+- **Longitudinal re-interrogation** — re-interview a persona panel against new decision artifacts weeks or months later, with no re-recruitment cost and no panel attrition.
+- **Cross-validation against research literature or strategy documents** — use the [reference correlation](#output-3--reference-correlation) output to compare existing study findings, internal strategy briefs, or published research against the synthetic customer voice and surface alignment, contradictions, and missing themes.
+
+The platform is **not a substitute for ground truth** — synthetic respondents can't replicate lived experience, true buying behavior, or the unprompted creativity of real people. But used as a multiplier around real research, it lets a team test more, ship sharper instruments, and stretch a fixed research budget further than fieldwork alone allows.
 
 ---
 
