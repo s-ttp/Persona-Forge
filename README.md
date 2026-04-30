@@ -237,18 +237,24 @@ All output endpoints first attempt ChromaDB retrieval and fall back to reading r
 
 Different parts of the pipeline are assigned to models tuned for that workload:
 
-| Role | Model |
-|---|---|
-| Questionnaire extraction / generation | `claude-sonnet-4-6` |
-| Manual persona generation (envelope) | `claude-opus-4-7` |
-| ML persona generation (cluster → JSON) | `gpt-4o-mini` |
-| Interviewer | User-selectable: `gpt-4o-mini`, `gpt-5.4` (Responses API), or `kimi` (Moonshot kimi-k2.5) |
-| Respondent pool (weighted random) | `claude-sonnet-4-6` 30%, `gpt-5.4` 30%, `gemini-2.5-flash` 25%, `Llama-3.3-70B` 8%, `Qwen2.5-72B` 7% |
-| Per-interview transcript summary | `claude-haiku-4-5-20251001` |
-| Insights / correlation synthesis | `claude-sonnet-4-6` |
-| Embeddings | `text-embedding-3-large` (OpenAI) |
+| Role | Model | Source |
+|---|---|---|
+| Questionnaire extraction / generation | `claude-sonnet-4-6` | `backend/llm/questionnaire_extractor.py` |
+| Brief-driven persona generation (envelope) | `claude-opus-4-7` | `backend/llm/persona_generator.py` |
+| ML persona materialization (cluster → JSON) | `gpt-4o-mini` | `backend/ml/persona_generator.py` |
+| Interviewer | User-selectable: `gpt-5.4` (OpenAI Responses API with reasoning), `gpt-4o-mini` (chat completions), or `kimi-k2.5` (Moonshot AI) | `backend/llm/interview_conductor.py` |
+| Adaptive follow-up generator | Shares the interviewer's model (calls back through `_call_interviewer`) | `backend/llm/interview_conductor.py` |
+| Respondent pool (weighted random) | `claude-sonnet-4-6` 30%, `gpt-5.4` 30%, `gemini-2.5-flash` 25%, `meta-llama/Llama-3.3-70B-Instruct` 8% (via HuggingFace), `Qwen/Qwen2.5-72B-Instruct` 7% (via HuggingFace) | `backend/llm/interview_conductor.py` |
+| Per-interview transcript summary | `claude-haiku-4-5-20251001` | `backend/routes/output.py` |
+| Insights synthesis | `claude-sonnet-4-6` | `backend/routes/output.py` |
+| Reference correlation analysis | `claude-sonnet-4-6` | `backend/routes/output.py` |
+| Legacy thematic report (`/reports`) | `claude-opus-4-7` (default) or `gpt-4o-mini` (when `model=openai` is passed) | `backend/routes/reports.py` |
+| Embeddings | `text-embedding-3-large` (OpenAI) | `backend/utils/vector_store.py` |
 
-The interviewer call has a graceful fallback chain: `gpt-5.4` → `gpt-4o-mini` → raw prompt, so a model outage doesn't kill an entire interview run.
+**Fallback behavior on the interviewer call:**
+
+- If the user selects `gpt-5.4` or `openai`: the platform first attempts `gpt-5.4` via the OpenAI Responses API; on failure it falls back to `gpt-4o-mini` via chat completions; on a final failure it returns the raw prompt as the answer (a known degraded-output edge case to monitor).
+- If the user selects `kimi`: the call is direct to Moonshot's `kimi-k2.5` with no fallback — a Moonshot outage will surface as a job-level error.
 
 ---
 
