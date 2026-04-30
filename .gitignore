@@ -1,0 +1,66 @@
+# Secrets
+.env
+.env.*
+!.env.example
+backend/tokens.json
+backend/users.json
+
+# Internal-only docs (excluded per repo owner)
+MEMORY.md
+port_details_to_avoid.md
+virtual_survey_platform_build_prompt.md
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+
+# User-uploaded / generated data
+backend/storage/uploads/
+backend/storage/datasets/
+backend/storage/chromadb/
+backend/chroma_db/
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+venv/
+.venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+.pnpm-store/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build / cache
+dist/
+build/
+.cache/
+.parcel-cache/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local tooling state
+.claude/
