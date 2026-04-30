@@ -2,9 +2,16 @@
 
 **An AI-powered customer research and decision simulation engine.**
 
-PersonaForge models how segments of your customer base — synthetic ones drawn from briefs, or data-grounded ones clustered from your actual user records — would respond to questions, propositions, and decision scenarios. Upload a questionnaire, concept document, or strategy artifact; the platform builds the persona panel, runs the conversations across a multi-model respondent pool, and returns structured transcripts, thematic insights, and correlation analyses against any reference material you supply.
+PersonaForge simulates how your customers would react to questions, propositions, and decisions — before you put them in front of real people.
 
-It compresses what would normally be weeks of recruiting, scheduling, transcription, and coding into a background job, while preserving the structural diversity of opinion that makes qualitative research useful for decisions.
+The workflow is straightforward:
+
+1. **Define the audience.** Describe a target customer segment in plain language, *or* upload a customer dataset and let the platform cluster it into data-grounded personas.
+2. **Provide what you want to test.** Upload a questionnaire, concept brief, strategy document, or any decision artifact.
+3. **Run the simulation.** A panel of frontier LLMs interviews each persona in the background, producing a full transcript per conversation.
+4. **Read the results.** Download structured transcripts, a synthesized thematic insights report, or a correlation analysis that cross-validates any reference artifact against the simulated customer voice.
+
+The whole loop compresses what would normally be weeks of recruiting, scheduling, transcription, and coding into hours — while preserving the structural diversity of opinion that makes qualitative research useful for decisions.
 
 ---
 
