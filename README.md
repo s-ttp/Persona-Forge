@@ -6,7 +6,7 @@ PersonaForge simulates how your customers would react to questions, propositions
 
 The workflow is straightforward:
 
-1. **Define the audience.** Describe a target customer segment in plain language, *or* upload a customer dataset and let the platform cluster it into data-grounded personas.
+1. **Define the audience.** Describe a target customer segment in plain language, *or* upload a customer dataset and let PersonaForge derive personas directly from it using **machine learning** — an unsupervised clustering pipeline (PCA + KMeans, with silhouette-based auto-K selection) groups your real customers into behaviorally distinct segments, and each cluster is then materialized as a fully-formed persona.
 2. **Provide what you want to test.** Upload a questionnaire, concept brief, strategy document, or any decision artifact.
 3. **Run the simulation.** A panel of frontier LLMs interviews each persona in the background, producing a full transcript per conversation.
 4. **Read the results.** Download structured transcripts, a synthesized thematic insights report, or a correlation analysis that cross-validates any reference artifact against the simulated customer voice.
@@ -29,7 +29,7 @@ The whole loop compresses what would normally be weeks of recruiting, scheduling
 - [Environment Variables](#environment-variables)
 - [Running the Stack](#running-the-stack)
 - [API Surface](#api-surface)
-- [Data-Grounded Persona Pipeline](#data-grounded-persona-pipeline)
+- [ML-Driven Persona Generation](#ml-driven-persona-generation)
 - [Reporting Intelligence & Outputs](#reporting-intelligence--outputs)
 - [Authentication](#authentication)
 - [Roadmap & Limitations](#roadmap--limitations)
@@ -52,7 +52,15 @@ Typical use cases include:
 Two persona-creation paths feed the same simulation engine:
 
 1. **Brief-driven personas** — describe the target customer in natural language; an LLM expands the brief into distinct synthetic personas matching the envelope.
-2. **Data-grounded personas** — upload a CSV of your existing customer/user data; a KMeans + PCA segmentation pipeline clusters the population, then converts each cluster into a behavioral persona via LLM summarization. These personas are anchored in real distributions of real customers.
+2. **ML-driven personas (data-grounded)** — upload a CSV of your existing customer/user data and PersonaForge runs a full unsupervised machine-learning segmentation pipeline:
+   - **Profiling** — every column is type-inferred and scored for identifier risk; PII and high-risk fields are auto-excluded so personas are derived from behavioral distributions, not from individuals.
+   - **Feature engineering** — numeric scaling (`StandardScaler`), one-hot encoding for low-cardinality categoricals, free-text and high-missing columns dropped.
+   - **Dimensionality reduction** — Principal Component Analysis, capped at 20 components.
+   - **Clustering** — KMeans with **automatic K selection** via silhouette score sweep when the user doesn't specify a cluster count.
+   - **Cluster explanation** — per-cluster dominant signals (top differentiating features) and latent-component loadings.
+   - **Persona materialization** — each cluster's statistical signature is converted into a fully-formed behavioral persona JSON via an LLM.
+
+   The result: personas anchored in the real distributions of your real customers, not the modeller's intuition.
 
 Both paths converge on the same interview engine: each persona is questioned by a randomly-weighted respondent model from a pool of five frontier LLMs, with adaptive follow-up probes generated mid-conversation. The result is an interview corpus with structural diversity rather than the stylistic fingerprint of any single model.
 
@@ -60,16 +68,17 @@ Both paths converge on the same interview engine: each persona is questioned by 
 
 ## Key Features
 
-- **Two persona creation paths**: brief-driven (natural language describes the target customer) and data-grounded (clustered from real customer datasets).
-- **Multi-model respondent pool**: each persona's answers are produced by a stochastically chosen LLM (Claude Sonnet, GPT, Gemini, Llama, Qwen) so the simulated panel has stylistic and reasoning diversity rather than mono-model bias.
-- **Adaptive follow-up probes**: the interviewer model decides per-turn whether a follow-up is warranted, mirroring how a skilled qualitative researcher pursues an interesting answer.
-- **Decision-document ingestion**: upload a PDF/DOCX brief, strategy artifact, or concept doc and the platform either extracts existing questions or generates a fresh questionnaire grounded in the document.
-- **Reference correlation**: compare a simulated interview corpus against a separate reference artifact to surface alignment, contradictions, and gaps in your thinking.
-- **Repeatable panels**: once a persona panel exists, it can be re-interviewed with new questions or against new decision artifacts at a fraction of the cost of fresh fieldwork.
-- **Identifier-risk-aware ML pipeline**: the dataset profiler infers PII/identifier risk per column and automatically excludes high-risk fields from the clustering feature matrix — so personas are derived from behavioral distributions, not from individuals.
-- **Background workers**: long-running interviews (30 sec – 5 min each) run on a Redis/RQ worker so the API stays responsive even with hundreds of simultaneous simulated conversations.
-- **Vector-indexed transcripts**: every answer is embedded into ChromaDB (`text-embedding-3-large`) for thematic search and synthesis at corpus scale.
-- **Output formats**: per-persona transcripts (HTML/DOCX), synthesized insight reports across the corpus, and correlation analyses against any reference document.
+- **Machine-learning-driven persona generation** — upload a real customer dataset and the platform automatically segments it (PCA + KMeans with silhouette-based auto-K) and materializes each cluster as a behaviorally distinct persona. No need to hand-author segments; the data tells you what your audience looks like.
+- **Identifier-risk-aware ML pipeline** — before clustering, every column in the uploaded dataset is profiled for type and PII/identifier risk. High-risk fields (emails, phones, free-form names, high-cardinality IDs) are auto-excluded from the feature matrix so personas reflect *behavioral patterns*, not individuals.
+- **Two persona creation paths** — brief-driven (natural language describes the target customer) *or* ML-driven (clustered from real customer datasets). Both feed the same simulation engine.
+- **Multi-model respondent pool** — each persona's answers are produced by a stochastically chosen LLM (Claude Sonnet, GPT, Gemini, Llama, Qwen) so the simulated panel has stylistic and reasoning diversity rather than mono-model bias.
+- **Adaptive follow-up probes** — the interviewer model decides per-turn whether a follow-up is warranted, mirroring how a skilled qualitative researcher pursues an interesting answer.
+- **Decision-document ingestion** — upload a PDF/DOCX brief, strategy artifact, or concept doc and the platform either extracts existing questions or generates a fresh questionnaire grounded in the document.
+- **Reference correlation** — compare a simulated interview corpus against a separate reference artifact to surface alignment, contradictions, and gaps in your thinking.
+- **Repeatable panels** — once a persona panel exists, it can be re-interviewed with new questions or against new decision artifacts at a fraction of the cost of fresh fieldwork.
+- **Background workers** — long-running interviews (30 sec – 5 min each) run on a Redis/RQ worker so the API stays responsive even with hundreds of simultaneous simulated conversations.
+- **Vector-indexed transcripts** — every answer is embedded into ChromaDB (`text-embedding-3-large`) for thematic search and synthesis at corpus scale.
+- **Output formats** — per-persona transcripts (HTML/DOCX), synthesized insight reports across the corpus, and correlation analyses against any reference document.
 
 ---
 
@@ -370,9 +379,9 @@ A non-exhaustive reference. All routes require a Bearer token unless noted.
 
 ---
 
-## Data-Grounded Persona Pipeline
+## ML-Driven Persona Generation
 
-The dataset → persona pipeline lives in `backend/ml/` and is what makes simulated panels reflective of real customer distributions rather than the modeller's intuition. It runs in three stages:
+PersonaForge's machine-learning persona pipeline is what makes simulated panels reflective of real customer distributions rather than the modeller's intuition. The pipeline lives in `backend/ml/` and runs in three stages:
 
 1. **Profiler (`profiler.py`)** — per-column type inference plus identifier-risk scoring. High-risk columns (emails, phone numbers, free-form names, IDs with high cardinality) are flagged for exclusion from the feature matrix.
 
@@ -508,4 +517,4 @@ When working on the backend, both `uvicorn` and the worker need to be restarted 
 
 ## License
 
-TBD — repository owner to add a `LICENSE` file.
+PersonaForge is released under the [MIT License](LICENSE) — free to use, modify, and distribute, including for commercial purposes, with attribution.
